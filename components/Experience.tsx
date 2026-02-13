@@ -5,7 +5,7 @@ export default function Experience() {
   const experiences = [
     { period: "2022", company: "Nabrak Party Coach Nafari", role: "Marksman", status: "Inaktif" },
     { period: "2022", company: "Nabrak Party Koh Delwyn", role: "Roam", status: "Inaktif" },
-    { period: "2022-Present", company: "Partyan Cap Kontol", role: "Roam Jago", status: "Aktif" }
+    { period: "2022-Present", company: "Partyan Bubur Telkom", role: "Roam Jago", status: "Aktif" }
   ];
 
   return (

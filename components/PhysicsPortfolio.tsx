@@ -10,8 +10,7 @@ const PhysicsPortfolio = () => {
   useEffect(() => {
     if (!sceneRef.current) return;
 
-    // 1. MATIKAN GRAVITASI
-    // Ini rahasianya agar objek ngambang
+    // 1. SETTING ANTI-GRAVITASI
     engineRef.current.gravity.y = 0; 
 
     const width = sceneRef.current.offsetWidth;
@@ -29,29 +28,29 @@ const PhysicsPortfolio = () => {
       },
     });
 
-    // 2. DINDING PEMBATAS (Tetap perlu agar objek tidak melayang keluar layar)
+    // 2. DINDING PEMBATAS
     const wallOptions = { 
       isStatic: true, 
       render: { visible: false },
-      restitution: 1 // Biar kalau mentok dinding, dia mantul balik
+      restitution: 1 
     };
     const ground = Matter.Bodies.rectangle(width / 2, height + 25, width, 50, wallOptions);
     const ceiling = Matter.Bodies.rectangle(width / 2, -25, width, 50, wallOptions);
     const leftWall = Matter.Bodies.rectangle(-25, height / 2, 50, height, wallOptions);
     const rightWall = Matter.Bodies.rectangle(width + 25, height / 2, 50, height, wallOptions);
 
-    // 3. FUNGSI OBJEK DENGAN HAMBATAN UDARA RENDAH (Air Friction)
+    // 3. FUNGSI PEMBUAT OBJEK
     const createWord = (x: number, y: number, text: string) => {
       return Matter.Bodies.rectangle(x, y, text.length * 40, 60, {
         restitution: 0.9,
-        frictionAir: 0.02, // Memberikan sedikit efek 'melayang di air'
+        frictionAir: 0.02,
         render: { fillStyle: 'transparent' },
         label: text
       });
     };
 
-    const createPng = (x: number, y: number, imgPath: string, scale: number = 0.5) => {
-      return Matter.Bodies.rectangle(x, y, 80, 80, {
+    const createPng = (x: number, y: number, imgPath: string, scale: number = 0.2) => {
+      return Matter.Bodies.rectangle(x, y, 100, 100, {
         restitution: 0.9,
         frictionAir: 0.02,
         render: {
@@ -64,51 +63,61 @@ const PhysicsPortfolio = () => {
       });
     };
 
-    // --- SPAWN OBJEK DI POSISI ACAK ---
+    // --- SPAWN OBJEK ---
     const port = createWord(width * 0.3, height * 0.4, "PORT");
     const fo = createWord(width * 0.5, height * 0.5, "FO");
     const lio = createWord(width * 0.7, height * 0.6, "LIO");
 
-    const png1 = createPng(width * 0.2, height * 0.2, "/sticker1.png", 0.2); 
-    const png2 = createPng(width * 0.8, height * 0.3, "/sticker2.png", 0.2);
-    const png3 = createPng(width * 0.5, height * 0.8, "/sticker3.png", 0.2);
+    // Pastikan file ini ada di folder /public/
+    const png1 = createPng(width * 0.2, height * 0.2, "/sticker1.png"); 
+    const png2 = createPng(width * 0.8, height * 0.3, "/sticker2.png");
+    const png3 = createPng(width * 0.5, height * 0.8, "/sticker3.png");
 
-    // 4. BERIKAN SEDIKIT DORONGAN AWAL (Biar langsung gerak pas load)
-    [port, fo, lio, png1, png2, png3].forEach(body => {
+    // 4. DORONGAN AWAL
+    const allObjects = [port, fo, lio, png1, png2, png3];
+    allObjects.forEach(body => {
       Matter.Body.setVelocity(body, {
         x: (Math.random() - 0.5) * 5,
         y: (Math.random() - 0.5) * 5
       });
     });
 
+    // 5. INTERAKSI MOUSE
     const mouse = Matter.Mouse.create(render.canvas);
     const mouseConstraint = Matter.MouseConstraint.create(engineRef.current, {
       mouse: mouse,
-      constraint: { stiffness: 0.1, render: { visible: false } }
+      constraint: { 
+        stiffness: 0.1, 
+        render: { visible: false } 
+      }
     });
     render.mouse = mouse;
 
     Matter.Composite.add(engineRef.current.world, [
       ground, ceiling, leftWall, rightWall, 
-      port, fo, lio, 
-      png1, png2, png3, 
+      ...allObjects, 
       mouseConstraint
     ]);
 
+    // 6. CUSTOM RENDERING TEKS
     Matter.Events.on(render, 'afterRender', () => {
       const ctx = render.context;
       if (!ctx) return;
+      
       ctx.font = '900 70px Inter, system-ui, sans-serif';
       ctx.fillStyle = 'white';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
 
+      // Hanya gambar teks untuk objek yang punya label
       [port, fo, lio].forEach((body) => {
-        ctx.save();
-        ctx.translate(body.position.x, body.position.y);
-        ctx.rotate(body.angle);
-        ctx.fillText(body.label, 0, 0);
-        ctx.restore();
+        if (body.label) {
+          ctx.save();
+          ctx.translate(body.position.x, body.position.y);
+          ctx.rotate(body.angle);
+          ctx.fillText(body.label, 0, 0);
+          ctx.restore();
+        }
       });
     });
 
@@ -120,7 +129,7 @@ const PhysicsPortfolio = () => {
       Matter.Render.stop(render);
       Matter.Runner.stop(runner);
       Matter.Engine.clear(engineRef.current);
-      render.canvas.remove();
+      if (render.canvas) render.canvas.remove();
     };
   }, []);
 

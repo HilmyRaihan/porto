@@ -1,20 +1,22 @@
 "use client";
 
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import Hero from "@/components/Hero";
 import Experience from "@/components/Experience";
 import Expertise from "@/components/Expertise";
 import GetInTouch from "@/components/GetInTouch";
-import { motion } from "framer-motion";
+import Education from "@/components/Education";
 
+// Konfigurasi Animasi agar konsisten
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.6, ease: "easeOut" }
+  transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] }
 };
 
 const staggerContainer = {
-  animate: { transition: { staggerChildren: 0.15 } }
+  animate: { transition: { staggerChildren: 0.1 } }
 };
 
 export default function Home() {
@@ -26,7 +28,16 @@ export default function Home() {
     const targetId = id.toLowerCase().replace(/\s+/g, "-");
     const element = document.getElementById(targetId);
     if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
+      const offset = 100; // Offset agar tidak tertutup navbar sticky
+      const bodyRect = document.body.getBoundingClientRect().top;
+      const elementRect = element.getBoundingClientRect().top;
+      const elementPosition = elementRect - bodyRect;
+      const offsetPosition = elementPosition - offset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: "smooth"
+      });
     }
   };
 
@@ -40,29 +51,27 @@ export default function Home() {
       >
         
         {/* --- NAVBAR --- */}
-        {/* Di HP kita buat sticky di atas tapi tidak terlalu lebar */}
         <motion.nav 
           variants={fadeInUp}
-          className="flex justify-between items-center mb-8 md:mb-12 px-2 md:px-4 sticky top-4 z-50"
+          className="flex justify-between items-center mb-8 md:mb-12 px-2 md:px-4 sticky top-4 z-50 pointer-events-none"
         >
-          <div className="font-bold hidden lg:block text-lg italic tracking-tighter">
+          <div className="font-bold hidden lg:block text-lg italic tracking-tighter text-slate-800">
             Hilmy Raihan Alhifari
           </div>
 
-          {/* Navigasi: Pill menu dibuat pas di tengah saat mobile */}
-          <div className="flex mx-auto lg:mx-0 gap-1 bg-white/80 backdrop-blur-md p-1.5 rounded-full shadow-lg border border-gray-200/50 text-xs md:text-sm font-medium">
+          <div className="flex mx-auto lg:mx-0 gap-1 bg-white/80 backdrop-blur-md p-1.5 rounded-full shadow-xl shadow-blue-900/5 border border-white/50 pointer-events-auto">
             {menus.map((menu) => (
               <button
                 key={menu}
                 onClick={() => handleScroll(menu)}
-                className={`px-5 md:px-8 py-2 transition-all duration-300 rounded-full relative ${
-                  activeTab === menu ? "text-blue-600" : "text-gray-500 hover:text-black"
+                className={`px-6 md:px-8 py-2.5 transition-all duration-300 rounded-full relative text-xs md:text-sm font-bold uppercase tracking-wider ${
+                  activeTab === menu ? "text-blue-600" : "text-gray-400 hover:text-slate-900"
                 }`}
               >
                 {activeTab === menu && (
                   <motion.div 
                     layoutId="activeTab"
-                    className="absolute inset-0 bg-blue-50 rounded-full -z-10 shadow-sm"
+                    className="absolute inset-0 bg-blue-50 rounded-full -z-10 shadow-inner"
                     transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                   />
                 )}
@@ -71,29 +80,35 @@ export default function Home() {
             ))}
           </div>
 
-          <div className="font-medium hidden sm:block text-[10px] md:text-sm uppercase tracking-[0.2em] text-gray-400">
+          <div className="font-bold hidden sm:block text-[10px] md:text-xs uppercase tracking-[0.3em] text-blue-600/40">
              Roam Jago Portfolio
           </div>
         </motion.nav>
 
         {/* --- SECTION: ABOUT ME --- */}
-        <motion.section variants={fadeInUp} id="about-me" className="space-y-4 mb-10 scroll-mt-24">
+        <motion.section 
+          variants={fadeInUp} 
+          id="about-me" 
+          className="space-y-4 mb-10 scroll-mt-28"
+        >
           <Hero />
           
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            {/* Box Intro */}
+            {/* Intro Box */}
             <motion.div 
               whileHover={{ y: -5 }}
-              className="bg-white rounded-[2rem] p-6 md:p-8 border border-gray-100 flex flex-col justify-center"
+              className="bg-white rounded-[2.5rem] p-8 md:p-10 border border-gray-100 flex flex-col justify-center shadow-sm"
             >
-              <h2 className="text-xl md:text-2xl font-bold mb-3 md:mb-4 italic">Hello, I'm Hilmy</h2>
-              <p className="text-gray-500 text-sm leading-relaxed">
+              <h2 className="text-2xl md:text-3xl font-black mb-4 italic tracking-tight text-slate-800">
+                Hello, I'm Hilmy
+              </h2>
+              <p className="text-gray-500 text-sm md:text-base leading-relaxed font-medium">
                 A Roamer player who can design UI/UX at the same time. 
                 Focusing on vision, utility, and clean interfaces.
               </p>
             </motion.div>
 
-            {/* Box GetInTouch - Di HP akan turun ke bawah */}
+            {/* GetInTouch Box */}
             <div className="lg:col-span-2">
               <GetInTouch />
             </div>
@@ -104,51 +119,27 @@ export default function Home() {
         <motion.section 
           variants={fadeInUp} 
           id="resume" 
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8 scroll-mt-24"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-12 scroll-mt-28"
         >
-          {/* Experience & Expertise akan otomatis stack di mobile */}
           <Experience />
           <Expertise />
-
-          {/* Education Card */}
-          <motion.div 
-            whileHover={{ y: -5 }}
-            className="bg-white rounded-[2rem] p-6 border border-gray-100 flex flex-col sm:col-span-2 lg:col-span-1"
-          >
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-bold text-gray-800">Education</h3>
-              <div className="bg-gray-100 px-2 py-1 rounded-md text-[10px] font-bold">GRADUATED</div>
-            </div>
-            
-            <div className="space-y-4">
-              <div className="bg-zinc-900 text-white p-5 rounded-3xl group">
-                <p className="text-[10px] opacity-60 font-mono">1955 - 6767</p>
-                <p className="text-xs font-bold mt-1">UNIGA</p>
-                <p className="text-[10px] mt-1 italic text-blue-300">Black People Engineering</p>
-                <div className="mt-3 pt-3 border-t border-white/10 flex justify-between items-center">
-                  <span className="text-[10px]">GPA</span>
-                  <span className="font-bold text-sm text-blue-400">3.59 / 4.00</span>
-                </div>
-              </div>
-              
-              <div className="bg-gray-50 border border-gray-200 p-5 rounded-3xl">
-                <p className="text-[10px] text-gray-400 font-mono">2022</p>
-                <p className="text-xs font-bold text-gray-800 mt-1">UI/UX Bootcamp</p>
-              </div>
-            </div>
-          </motion.div>
+          <Education />
         </motion.section>
 
         {/* --- FOOTER --- */}
         <motion.footer 
           variants={fadeInUp}
-          className="mt-12 md:mt-20 pb-10 border-t border-gray-200 pt-10 flex flex-col md:flex-row justify-between items-center text-gray-400 text-[9px] md:text-[10px] uppercase tracking-[0.2em] md:tracking-[0.3em] gap-6 px-4 text-center md:text-left"
+          className="mt-20 pb-12 border-t border-gray-200 pt-10 flex flex-col md:flex-row justify-between items-center text-gray-400 text-[9px] md:text-[10px] uppercase tracking-[0.3em] gap-8 px-4"
         >
-          <p>© 2026 Hilmy Raihan Alhifari — Yogyakarta</p>
-          <div className="flex gap-4 md:gap-6 italic lowercase">
-            <span>next.js</span>
-            <span>tailwind</span>
-            <span>framer motion</span>
+          <div className="text-center md:text-left">
+            <p className="font-bold text-slate-500 mb-1">© 2026 Hilmy Raihan Alhifari</p>
+            <p className="opacity-60 italic lowercase tracking-normal">Yogyakarta, Indonesia</p>
+          </div>
+          
+          <div className="flex gap-6 italic lowercase font-medium text-slate-500">
+            <span className="hover:text-blue-500 transition-colors cursor-default">next.js</span>
+            <span className="hover:text-blue-400 transition-colors cursor-default">tailwind</span>
+            <span className="hover:text-purple-500 transition-colors cursor-default">framer motion</span>
           </div>
         </motion.footer>
 
